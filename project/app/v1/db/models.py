@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, LargeBinary
 from sqlalchemy.orm import declarative_mixin
-
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from .config import Base
+
+import uuid
 
 
 @declarative_mixin
@@ -16,7 +18,7 @@ class Timestamp:
 class FileData(Timestamp, Base):
     __tablename__ = "filedata"
 
-    file_id = Column(Integer, primary_key=True)
+    file_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     owner_id = Column(Integer)
     filename = Column(String)
     filepath = Column(String)
