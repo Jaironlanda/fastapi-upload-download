@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, File, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Annotated
+from typing import Optional
 
 # from .db.models import Team, User
 from .db.config import get_session
-from .db.utils import create_upload, get_upload
+from .db.utils import create_upload, get_upload, get_list_file
 from .db.schemas import FileDataBase
 
 # from .db.schemas import TeamBase, User, UserBase, TeamWithUser, Team, UserCreate
@@ -36,8 +36,14 @@ async def upload_file(file: UploadFile, session: AsyncSession = Depends(get_sess
         }
         , session=session)
     
+
+@router.get("/list", tags=['List File'])
+async def list_file(session: AsyncSession = Depends(get_session), limit: Optional[int] = 10,
+    skip: Optional[int] = 0,):
+    return await get_list_file(session, skip=skip, limit=limit)
+
 @router.get("/d1", tags=["Download"])
-async def download_file_1(id: int, session: AsyncSession = Depends(get_session)):
+async def download_file_1(id: str, session: AsyncSession = Depends(get_session)):
     
     myfile = await get_upload(id, session=session)
     print(myfile)
@@ -48,7 +54,7 @@ async def download_file_1(id: int, session: AsyncSession = Depends(get_session))
     )
 
 @router.get("/d2", tags=["Download"])
-async def download_file_2(id: int, session: AsyncSession = Depends(get_session)):
+async def download_file_2(id: str, session: AsyncSession = Depends(get_session)):
    
    result = await get_upload(id, session=session)
    decode_file = base64.b64decode(result['filebase64'])
