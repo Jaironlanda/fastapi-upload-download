@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from .models import FileData
 from .schemas import FileDataBase, FileDataSchemas
-
+from typing import Optional
 
 async def create_upload(myfile: FileData, session: AsyncSession):
     db_file = FileData(**myfile)
@@ -13,7 +13,7 @@ async def create_upload(myfile: FileData, session: AsyncSession):
     await session.refresh(db_file)
     return db_file
 
-async def get_upload(id: int, session: AsyncSession):
+async def get_upload(id: str, session: AsyncSession):
     query = select(FileData).where(FileData.file_id == id).limit(1)
 
     result = await session.execute(query)
@@ -25,6 +25,21 @@ async def get_upload(id: int, session: AsyncSession):
         'filepath': file_data.filepath,
         'filename': file_data.filename
     }
+
+async def get_list_file(session: AsyncSession, skip: Optional[int], limit: Optional[int]):
+    query = select(FileData).order_by(FileData.created_at.desc()).offset(skip).limit(limit)
+
+    result = await session.execute(query)
+
+    file_list = []
+    for x in result.scalars().all():
+        file_list.append({
+            "created_at": x.created_at,
+            "filename": x.filename,
+            "file_id": x.file_id
+        })
+    
+    return file_list
 
 # async def create_user(user: UserBase, session: AsyncSession):
 #     # db_user = User(name=user.name, age=user.age)
